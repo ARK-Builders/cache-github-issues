@@ -1,4 +1,4 @@
-name: Fetch exchange rates
+name: Return Data from JavaScript Function
 
 on:
   push:
@@ -7,45 +7,36 @@ on:
   schedule:
     - cron: "0 12 * * *"
 
-env:
-  APP_ID: ${{ secrets.APP_ID }}
-
 jobs:
-  build:
+  call_api_job:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v3
+      - name: Check out code
+        uses: actions/checkout@v2
 
-      - name: Fetch Issues
+      - name: Setup Node.js and NPM
+        uses: actions/setup-node@v2
+        with:
+          node-version: '14'
+
+      - name: Install Dependencies
         run: |
-        
-          # Fetch issues from the repository
-          if [ -n "$APP_ID" ]; then
-            API_DATA1=$(curl -H "Authorization: token $APP_ID" \
-                 -H "Accept: application/vnd.github.v3+json" \
-                 "https://api.github.com/repos/ARK-Builders/website/issues")
-                 
-            API_DATA2=$(curl -H "Authorization: token $APP_ID" \
-                 -H "Accept: application/vnd.github.v3+json" \
-                 "https://api.github.com/repos/ARK-Builders/arklib/issues")
-            
-            API_DATA3=$(curl -H "Authorization: token $APP_ID" \
-                 -H "Accept: application/vnd.github.v3+json" \
-                 "https://api.github.com/repos/ARK-Builders/arklib-android/issues")
-            
-            # Use JavaScript to parse the JSON arrays and combine them
-            combined_json=$(node -e "const arr1 = ${API_DATA1}; const arr2 = ${API_DATA2}; const arr3 = ${API_DATA3}; const combined = [...arr1, ...arr2, ...arr3]; console.log(JSON.stringify(combined));")
-  
-            # Set the output variable with the concatenated array
-            echo "::set-output name=combined_json::${combined_json}"
-            
-            echo "$combined_json" > test.json
-            
+          npm install axios
+        working-directory: ${{ github.workspace }}
+
+      - name: Run JavaScript File
+        id: fetchIssues
+        run: |
+          data=$(node -e "const fetchIssues = require('./fetchIssues'); async function main() { try { const data = await fetchIssues(); console.log(JSON.stringify(data));} catch (error) { console.error('Error retrieving data:', error);}}; main()")
+          echo "$data" > issues.json
+
+          
+          
       - name: Push into Git
         run: |-
           git config --global user.email "bot@ark-builders.dev"
           git config --global user.name "ARK Builders Bot"
-          git add test.json
-          git commit -m "Automated update of rates"
+          git add issues.json
+          git commit -m "Automated update of rate"
           git push
