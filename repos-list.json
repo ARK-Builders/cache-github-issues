@@ -1,6 +1,6 @@
 [
   {
-    "name": "arklib",
+    "name": "ark-rust",
     "languages": [
       "Rust"
     ],
@@ -10,28 +10,10 @@
     ]
   },
   {
-    "name": "ark-cli",
-    "languages": [
-      "Rust"
-    ],
-    "platforms": [
-      "Desktop"
-    ]
-  },
-  {
-    "name": "arklib-android",
+    "name": "ark-android",
     "languages": [
       "Kotlin",
       "Rust"
-    ],
-    "platforms": [
-      "Android"
-    ]
-  },
-  {
-    "name": "ark-components-android",
-    "languages": [
-      "Kotlin"
     ],
     "platforms": [
       "Android"
